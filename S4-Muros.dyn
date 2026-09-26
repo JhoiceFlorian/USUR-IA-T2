@@ -1,0 +1,417 @@
+{
+  "Uuid": "1e25fa33-2149-4c28-be59-73c3c5b54a2f",
+  "IsCustomNode": false,
+  "Description": "",
+  "Name": "S4-Muros",
+  "ElementResolver": {
+    "ResolutionMap": {}
+  },
+  "Inputs": [],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "DSRevitNodesUI.ElementsOfCategory, DSRevitNodesUI",
+      "Id": "badba57f7a6141088bbaabe5cfa14f2d",
+      "NodeType": "ExtensionNode",
+      "Inputs": [
+        {
+          "Id": "5cf57de0b45748f8be01e705cd7a85fb",
+          "Name": "Category",
+          "Description": "The Category",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "5493d7c3041a4a5ea43df58ef621b96d",
+          "Name": "Elements",
+          "Description": "An element class.",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Get all elements of the specified category from the model."
+    },
+    {
+      "ConcreteType": "DSRevitNodesUI.Categories, DSRevitNodesUI",
+      "SelectedIndex": 502,
+      "SelectedString": "OST_Walls",
+      "Id": "45f57bea85354cbf9b92f4df876a36fe",
+      "NodeType": "ExtensionNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "5d170a65691342cca9267e6329dedd93",
+          "Name": "Category",
+          "Description": "The selected Category.",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "All built-in categories."
+    },
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "Code": "import clr\r\nclr.AddReference('RevitServices')\r\nimport RevitServices\r\nfrom RevitServices.Persistence import DocumentManager\r\n\r\nclr.AddReference('RevitAPI')\r\nfrom Autodesk.Revit.DB import *\r\n\r\ndoc = DocumentManager.Instance.CurrentDBDocument\r\n\r\n# Desenvolver los elementos de Dynamo a elementos nativos de Revit\r\nentrada = IN[0]\r\nif not isinstance(entrada, list):\r\n    entrada = [entrada]\r\nelementos = [UnwrapElement(e) for e in entrada]\r\n\r\nregistros = []\r\n\r\nfor el in elementos:\r\n    # Tipo de muro y su nombre\r\n    tipo = doc.GetElement(el.GetTypeId())\r\n    nombre_tipo = tipo.get_Parameter(BuiltInParameter.SYMBOL_NAME_PARAM).AsString()\r\n\r\n    # Nivel base del muro\r\n    nivel_el = doc.GetElement(el.LevelId)\r\n    nivel = nivel_el.Name if nivel_el else None\r\n\r\n    registros.append({\r\n        \"Id\": el.Id.Value,\r\n        \"Nombre\": nombre_tipo,\r\n        \"Nivel\": nivel\r\n    })\r\n\r\n# Comillas simples por fuera porque el nombre incluye el símbolo \" (pulgadas)\r\nvalores_validos = ['Concrete 12\"', 'Concrete 18\"', 'Concrete 24\"']\r\n\r\nfor r in registros:\r\n    nombre = r[\"Nombre\"].strip() if r[\"Nombre\"] else \"\"\r\n    if nombre == \"\":\r\n        r[\"Estado\"] = \"Falta parámetro\"\r\n    elif nombre not in valores_validos:\r\n        r[\"Estado\"] = \"Fuera de estándar\"\r\n    else:\r\n        r[\"Estado\"] = \"OK\"\r\n\r\nencabezados = [\"Id\", \"Nombre\", \"Nivel\", \"Estado\"]\r\nfilas = [[r[\"Id\"], r[\"Nombre\"], r[\"Nivel\"], r[\"Estado\"]]\r\n         for r in registros]\r\n\r\nOUT = [encabezados] + filas",
+      "Engine": "CPython3",
+      "VariableInputPorts": true,
+      "Id": "31dc7a84c540414fa8d5e4e5b9a6efb3",
+      "NodeType": "PythonScriptNode",
+      "Inputs": [
+        {
+          "Id": "e730a1f395984b7e947eddffbd16b281",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "6b9e91a3fa1d4be3ac3bbce6b24a2f96",
+          "Name": "OUT",
+          "Description": "Result of the python script",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Runs an embedded Python script."
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Watch, CoreNodeModels",
+      "WatchWidth": 200.0,
+      "WatchHeight": 200.0,
+      "Id": "48e4fc94e20c4e1bb6223ab17f725d46",
+      "NodeType": "ExtensionNode",
+      "Inputs": [
+        {
+          "Id": "f553792407de4fdcb20817e65ca7c29e",
+          "Name": "",
+          "Description": "Node to show output from",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "083cbf8b244a4830b96e8e251de07577",
+          "Name": "",
+          "Description": "Node output",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Visualizes a node's output"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.ZeroTouch.DSFunction, DynamoCore",
+      "Id": "2b6cbbf0bbb345e382ff6450b064be13",
+      "NodeType": "FunctionNode",
+      "Inputs": [
+        {
+          "Id": "390fa843143f4e39b2b2b4449548c321",
+          "Name": "filePath",
+          "Description": "string",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "ba23e32b7a1b4ee8a4ec4dbdb7504dba",
+          "Name": "sheetName",
+          "Description": "string",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "1cbbfabfd8bc4b87a9e715361e9640f1",
+          "Name": "data",
+          "Description": "var[][]",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "1cf0471bac0349a6afdc463ba0d19169",
+          "Name": "startRow",
+          "Description": "int\nDefault value : 0",
+          "UsingDefaultValue": true,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "eae4ef367c65414cb4419845a9032b3e",
+          "Name": "startColumn",
+          "Description": "int\nDefault value : 0",
+          "UsingDefaultValue": true,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "a9cb477af73644529354aac3b331086f",
+          "Name": "overWrite",
+          "Description": "bool\nDefault value : false",
+          "UsingDefaultValue": true,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "44b991c26ea241ea9c49bc3b526a27d9",
+          "Name": "writeAsString",
+          "Description": "bool\nDefault value : false",
+          "UsingDefaultValue": true,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "6b68c05c69ec47fb82a5c175716ff2db",
+          "Name": "bool",
+          "Description": "bool",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "FunctionSignature": "DSOffice.Data.OpenXMLExportExcel@string,string,var[][],int,int,bool,bool",
+      "Replication": "Auto",
+      "Description": "Data.OpenXMLExportExcel (filePath: string, sheetName: string, data: var[][], startRow: int = 0, startColumn: int = 0, overWrite: bool = false, writeAsString: bool = false): bool"
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Input.Filename, CoreNodeModels",
+      "Id": "ace9692b5bf84224ae5d30c54e603eb7",
+      "NodeType": "ExtensionNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "b55ff2222a5c494f8034ab050bf83947",
+          "Name": "",
+          "Description": "File Path",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Allows you to select a file on the system and returns its file path",
+      "HintPath": "D:\\3. DOCENCIA\\3.6 USUR\\Inteligencia Artificial\\S-04-Muros.xlsx",
+      "InputValue": ".\\S-04-Muros.xlsx"
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Input.StringInput, CoreNodeModels",
+      "SerializedWidth": 0.0,
+      "SerializedHeight": 0.0,
+      "Id": "6828009edc494bbbb4f7c6556698dc93",
+      "NodeType": "StringInputNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "9b0c0f84cd664cee83da4b36a9958b37",
+          "Name": "",
+          "Description": "String",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Creates a string.",
+      "InputValue": "Hoja1"
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "5493d7c3041a4a5ea43df58ef621b96d",
+      "End": "e730a1f395984b7e947eddffbd16b281",
+      "Id": "ed167d9ad8f042caad3782f35adc9f6c",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "5d170a65691342cca9267e6329dedd93",
+      "End": "5cf57de0b45748f8be01e705cd7a85fb",
+      "Id": "a52bee12c0a143aa81ba8bfae58ea46c",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "6b9e91a3fa1d4be3ac3bbce6b24a2f96",
+      "End": "f553792407de4fdcb20817e65ca7c29e",
+      "Id": "4aeaac929081444b9f50f606990f3c2d",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "083cbf8b244a4830b96e8e251de07577",
+      "End": "1cbbfabfd8bc4b87a9e715361e9640f1",
+      "Id": "60d98c88f965445fb526c72d8f5f8913",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "b55ff2222a5c494f8034ab050bf83947",
+      "End": "390fa843143f4e39b2b2b4449548c321",
+      "Id": "a8dc23b5837d47a68be11ed603806485",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "9b0c0f84cd664cee83da4b36a9958b37",
+      "End": "ba23e32b7a1b4ee8a4ec4dbdb7504dba",
+      "Id": "77b50cedafd947a1bf6e2de08bfbb1cc",
+      "IsHidden": "False"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "EnableLegacyPolyCurveBehavior": true,
+  "Thumbnail": "",
+  "GraphDocumentationURL": null,
+  "ExtensionWorkspaceData": [
+    {
+      "ExtensionGuid": "28992e1d-abb9-417f-8b1b-05e053bee670",
+      "Name": "Properties",
+      "Version": "3.6",
+      "Data": {}
+    },
+    {
+      "ExtensionGuid": "DFBD9CC0-DB40-457A-939E-8C8555555A9D",
+      "Name": "Generative Design",
+      "Version": "9.1",
+      "Data": {}
+    }
+  ],
+  "Author": "",
+  "Linting": {
+    "activeLinter": "None",
+    "activeLinterId": "7b75fb44-43fd-4631-a878-29f4d5d8399a",
+    "warningCount": 0,
+    "errorCount": 0
+  },
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 1.0,
+      "HasRunWithoutCrash": true,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "3.6.2.11575",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "_Background Preview",
+      "EyeX": -17.0,
+      "EyeY": 24.0,
+      "EyeZ": 50.0,
+      "LookX": 12.0,
+      "LookY": -13.0,
+      "LookZ": -58.0,
+      "UpX": 0.0,
+      "UpY": 1.0,
+      "UpZ": 0.0
+    },
+    "ConnectorPins": [],
+    "NodeViews": [
+      {
+        "Id": "badba57f7a6141088bbaabe5cfa14f2d",
+        "Name": "All Elements of Category",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 168.4178041543027,
+        "Y": 61.217703372937365
+      },
+      {
+        "Id": "45f57bea85354cbf9b92f4df876a36fe",
+        "Name": "Categories",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": -109.54065281899113,
+        "Y": 59.77685459940653
+      },
+      {
+        "Id": "31dc7a84c540414fa8d5e4e5b9a6efb3",
+        "Name": "Python Script",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 489.083185550548,
+        "Y": 59.87363220843207
+      },
+      {
+        "Id": "48e4fc94e20c4e1bb6223ab17f725d46",
+        "Name": "Watch",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 691.723535670194,
+        "Y": 104.07493155376795
+      },
+      {
+        "Id": "2b6cbbf0bbb345e382ff6450b064be13",
+        "Name": "Data.OpenXMLExportExcel",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 1047.915939727045,
+        "Y": -86.58379494800926
+      },
+      {
+        "Id": "ace9692b5bf84224ae5d30c54e603eb7",
+        "Name": "File Path",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 497.4081566235625,
+        "Y": -236.44963015491777
+      },
+      {
+        "Id": "6828009edc494bbbb4f7c6556698dc93",
+        "Name": "String",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 520.7821354822584,
+        "Y": -90.91358317322118
+      }
+    ],
+    "Annotations": [],
+    "X": -379.2761932981729,
+    "Y": 282.6122843876169,
+    "Zoom": 0.959788699581266
+  }
+}
